@@ -141,7 +141,17 @@ trait ApiSpecParserTrait extends BaseApiParser {
               docParam.allowMultiple = p.allowMultiple
               docParam.paramAccess = readString(p.access)
               docParam.internalDescription = readString(p.internalDescription)
-              docParam.dataType = readString(p.dataType)
+              val dataType = readString(p.dataType)
+              docParam.setValueTypeInternal(dataType)
+              docParam.dataType = try {
+                val cls = SwaggerContext.loadClass(dataType)
+                val annotatedName = ApiPropertiesReader.readName(cls)
+                // FIXME - support List[] similar to isResponseMultiValue
+                annotatedName
+              } catch {
+                case e: ClassNotFoundException =>
+                  dataType
+              }
               docParam.paramType = readString(p.paramType)
               docParam.paramType = if (docParam.paramType == null) TYPE_QUERY else docParam.paramType
 
