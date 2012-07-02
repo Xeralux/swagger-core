@@ -131,7 +131,7 @@ private class PlayApiSpecParser(_hostClass: Class[_], _apiVersion: String, _swag
       case e: String => str.replaceAll(".json", FORMAT_STRING).replaceAll(".xml", FORMAT_STRING)
     }
     Logger debug (s)
-    s
+    "/" + s
   }
 
   override protected def processOperation(method: Method, o: DocumentationOperation) = {
