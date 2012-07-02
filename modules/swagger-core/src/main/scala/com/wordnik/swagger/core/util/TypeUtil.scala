@@ -21,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect._
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+import scala.collection.mutable.ListBuffer
 
 object TypeUtil {
   /**
@@ -117,8 +118,12 @@ object TypeUtil {
   private def checkAndAddConcreteObjectType(classType:Type, list: java.util.List[String]) {
     if (classType.getClass.isAssignableFrom(classOf[Class[_]])){
       val listType: Class[_] = classType.asInstanceOf[Class[_]]
-      if (listType.getName.startsWith(WORDNIK_PACKAGES)) list.add(listType.getName)
+      if (isInterestingPackage(listType.getName)) list.add(listType.getName)
     }
+  }
+
+  private def isInterestingPackage(name: String) = {
+    whitelistPackages.exists { p => name.startsWith(p) }
   }
 
   /**
@@ -164,7 +169,7 @@ object TypeUtil {
                 }
                 case _ =>
               }
-              if (fieldClass.startsWith(WORDNIK_PACKAGES)) {
+              if (isInterestingPackage(fieldClass)) {
                 referencedClasses.add(fieldClass)
               }
               else {
@@ -185,7 +190,7 @@ object TypeUtil {
                 }
                 case _ =>
               }
-              if (methodReturnClass.startsWith(WORDNIK_PACKAGES)) {
+              if (isInterestingPackage(methodReturnClass)) {
                 referencedClasses.add(methodReturnClass)
               }
               else {
@@ -209,8 +214,13 @@ object TypeUtil {
   }
 
   private final val LOGGER: Logger = LoggerFactory.getLogger(TypeUtil.getClass().getName())
-  private final val WORDNIK_PACKAGES: String = "com.wordnik."
   private final val REFERENCED_CLASSES_CACHE: java.util.Map[String, java.util.Set[String]] = new java.util.HashMap[String, java.util.Set[String]]
+
+  /**
+   * If you'd like to emit models for other namespaces, adjust this sequence in your 
+   * application.
+   */
+  val whitelistPackages = ListBuffer("com.wordnik.")
 }
 
 
