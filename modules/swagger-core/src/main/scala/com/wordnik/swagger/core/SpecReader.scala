@@ -223,7 +223,7 @@ private class ApiModelParser(val hostClass: Class[_]) extends BaseApiParser {
       if (!isTransient){isTransient = propAnnoOutput._1}
     } catch {
       //this means there is no field declared to look for field level annotations.
-      case e: java.lang.NoSuchFieldException => isTransient = false
+      case e: java.lang.NoSuchFieldException =>
     }
 
     if (docParam.name == null && name != null)
