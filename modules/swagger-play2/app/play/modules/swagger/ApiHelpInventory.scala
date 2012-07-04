@@ -80,6 +80,40 @@ object ApiHelpInventory {
   }
 
   /**
+   * Get an unfiltered verbose set of resources (with full params documented etc...) suitable
+   * for use with services like 3scale.
+   */
+  private def getVerboseResources(format: String)(implicit requestHeader: RequestHeader) = {
+
+    val allApiDoc = new Documentation
+    for (clazz <- getControllerClasses) {
+      val currentApiEndPoint = clazz.getAnnotation(classOf[Api])
+      val currentApiPath = if (currentApiEndPoint != null && filterOutTopLevelApi) currentApiEndPoint.value else null
+
+      Logger.debug("Adding verbose " + clazz + " @ " + currentApiPath)
+
+      if (null != currentApiEndPoint && clazz.getName.endsWith("$")) {
+        val resourceDoc = new HelpApi(null).filterDocs(PlayApiReader.read(clazz, apiVersion, swaggerVersion, basePath, currentApiPath), currentApiPath)
+        Option(resourceDoc.getApis).foreach(_.foreach { api => 
+          if (!isApiAdded(allApiDoc, api)) {
+            allApiDoc.addApi(api)
+          }
+        })
+
+	Option(resourceDoc.getModels).foreach(_.foreach { case (k, v) =>
+	  allApiDoc.addModel(k, v)
+	})
+      }
+    }
+
+    allApiDoc.swaggerVersion = swaggerVersion
+    allApiDoc.basePath = basePath
+    allApiDoc.apiVersion = apiVersion
+
+    allApiDoc
+  }
+
+  /**
    * Get detailed API/models for a given resource
    */
   private def getResource(resourceName: String)(implicit requestHeader: RequestHeader) = {
@@ -115,6 +149,10 @@ object ApiHelpInventory {
       }
       case None => null
     }
+  }
+
+  def getVerboseHelpJson()(implicit requestHeader: RequestHeader): String = {
+    JsonUtil.getJsonMapper.writeValueAsString(getVerboseResources("json"))
   }
 
   def getRootHelpJson()(implicit requestHeader: RequestHeader): String = {

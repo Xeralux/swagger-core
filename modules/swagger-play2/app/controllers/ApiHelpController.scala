@@ -31,6 +31,14 @@ import scala.collection.JavaConversions._
  *
  */
 object ApiHelpController extends SwaggerBaseApiController {
+  /** Generate a complete set of swagger docs - in one file */
+  def getVerboseResources() = Action { request =>
+    implicit val requestHeader: RequestHeader = request;
+    val resources = ApiHelpInventory.getVerboseHelpJson()
+
+    returnValue(request, resources)
+  }
+  
   def getResources() = Action { request =>
     implicit val requestHeader: RequestHeader = request;
     val resources = returnXml(request) match {
