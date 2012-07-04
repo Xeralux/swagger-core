@@ -129,6 +129,7 @@ trait ApiSpecParserTrait extends BaseApiParser {
               docParam.name = readString(p.name)
               docParam.description = readString(p.value)
               docParam.defaultValue = readString(p.defaultValue)
+	      docParam.threescaleName = readString(p.threescaleName)
               try {
                 docParam.allowableValues = convertToAllowableValues(p.allowableValues)
               } catch {

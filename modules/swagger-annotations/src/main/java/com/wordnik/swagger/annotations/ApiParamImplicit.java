@@ -34,4 +34,5 @@ public @interface ApiParamImplicit {
     boolean allowMultiple() default false;
     String dataType() default "";
     String paramType() default "";
+    String threescaleName() default "";
 }

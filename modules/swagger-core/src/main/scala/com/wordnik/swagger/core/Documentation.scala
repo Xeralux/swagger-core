@@ -249,6 +249,14 @@ class DocumentationParameter(
   @XmlTransient
   def getValueTypeInternal() = this.valueTypeInternal
 
+  var threescaleName: String = ""
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
+  @JsonProperty(value = "threescale_name")
+  @XmlElement(name = "threescale_name", defaultValue = "")
+  def getThreescaleName = threescaleName
+  def setThreescaleName(s: String) { threescaleName = s }
+  
   override def clone(): Object = {
     var clonedAllowValues: DocumentationAllowableValues = null;
     if (null != allowableValues) {
@@ -262,6 +270,7 @@ class DocumentationParameter(
     cloned.wrapperName = wrapperName
     cloned.dataType = dataType
     cloned.valueTypeInternal = this.valueTypeInternal
+    cloned.threescaleName = this.threescaleName
 
     cloned
   }
