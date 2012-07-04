@@ -93,7 +93,13 @@ object ApiHelpInventory {
       Logger.debug("Adding verbose " + clazz + " @ " + currentApiPath)
 
       if (null != currentApiEndPoint && clazz.getName.endsWith("$")) {
-        val resourceDoc = new HelpApi(null).filterDocs(PlayApiReader.read(clazz, apiVersion, swaggerVersion, basePath, currentApiPath), currentApiPath)
+        val parser = new PlayApiSpecParser(clazz, apiVersion, swaggerVersion, basePath, currentApiPath)
+
+	// 3scale doesn't understand {format}
+	parser.setFormatString(".json")
+
+	// We need to 'filter' to add models
+        val resourceDoc = new HelpApi(null).filterDocs(parser.parse, currentApiPath)
         Option(resourceDoc.getApis).foreach(_.foreach { api => 
           if (!isApiAdded(allApiDoc, api)) {
             allApiDoc.addApi(api)
