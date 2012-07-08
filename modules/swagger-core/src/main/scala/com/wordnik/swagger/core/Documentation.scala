@@ -146,6 +146,13 @@ class DocumentationOperation(
 
   def this() = this(null, null, null)
 
+  var group: String = ""
+
+  @JsonSerialize(include = JsonSerialize.Inclusion.NON_DEFAULT)
+  @XmlElement(name = "group", defaultValue = "")
+  def getGroup = group
+  def setGroup(s: String) { group = s }
+
   private var parameters = new ListBuffer[DocumentationParameter]
 
   @XmlElement

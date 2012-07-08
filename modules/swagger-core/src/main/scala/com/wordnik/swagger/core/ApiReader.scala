@@ -98,6 +98,10 @@ trait ApiSpecParserTrait extends BaseApiParser {
       if (isDeprecated != null) docOperation.deprecated = true
 
       if (apiOperation != null) {
+        // If using 3scale, we'd like to group our APIs by endpoint
+	if(apiEndpoint != null)
+          docOperation.group = apiEndpoint.value
+
         docOperation.httpMethod = parseHttpMethod(method, apiOperation)
         docOperation.summary = readString(apiOperation.value)
         docOperation.notes = readString(apiOperation.notes)
