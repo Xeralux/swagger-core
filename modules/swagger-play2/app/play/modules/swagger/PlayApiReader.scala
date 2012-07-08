@@ -4,6 +4,7 @@ import com.wordnik.swagger.core._
 import com.wordnik.swagger.annotations._
 import com.wordnik.swagger.core.ApiValues._
 import com.wordnik.swagger.core.util.ReflectionUtil
+import com.wordnik.swagger.play.OperationFilter
 
 import javax.ws.rs._
 import javax.ws.rs.core.Context
@@ -130,9 +131,14 @@ private class PlayApiSpecParser(_hostClass: Class[_], _apiVersion: String, _swag
       case "" => str
       case e: String => str.replaceAll(".json", FORMAT_STRING).replaceAll(".xml", FORMAT_STRING)
     }
-    Logger debug (s)
     "/" + s
   }
+
+  /**
+   * Get the singleton instance that is implementing our controller 
+   * Unfortunately scala reflection doesn't yet have an API for this.
+   */
+  private def getSingleton = hostClass.getField("MODULE$").get(hostClass)
 
   override protected def processOperation(method: Method, o: DocumentationOperation) = {
     val fullMethodName = hostClass.getCanonicalName + "." + method.getName
@@ -141,7 +147,12 @@ private class PlayApiSpecParser(_hostClass: Class[_], _apiVersion: String, _swag
       case Some(route) => o.httpMethod = route.verb.value
       case None => Logger error "Could not find route " + fullMethodName
     }
-    o
+
+    val s = getSingleton
+    if(s.isInstanceOf[OperationFilter]) 
+      s.asInstanceOf[OperationFilter].processOperation(method, o)
+    else
+      o
   }
 
   override def processParamAnnotations(docParam: DocumentationParameter, paramAnnotations: Array[Annotation], method: Method): Boolean = {
