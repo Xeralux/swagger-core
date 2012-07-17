@@ -386,6 +386,7 @@ class DocumentationObject extends Name {
   private def setSchemaTypeDef(currentField: DocumentationParameter, currentSchema: DocumentationSchema) = {
     val isList = currentField.paramType.startsWith("List[");
     val isSet = currentField.paramType.startsWith("Set[");
+    val isArray = currentField.paramType.startsWith("Array[");
 
     if (isList || isSet) {
       currentSchema.setType("array")
@@ -398,6 +399,10 @@ class DocumentationObject extends Name {
         arrayItem.ref = arrayElementType
       }
       currentSchema.items = arrayItem
+    } else if (isArray) {
+      // This prevents us from generating invalid models with type names like
+      // "Array[long] and no definition for items
+      throw new Exception("Swagger doesn't understand Array types, use List or Set")
     } else {
       currentSchema.setType(currentField.paramType)
     }
