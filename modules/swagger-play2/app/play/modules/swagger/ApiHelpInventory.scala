@@ -90,9 +90,9 @@ object ApiHelpInventory {
       val currentApiEndPoint = clazz.getAnnotation(classOf[Api])
       val currentApiPath = if (currentApiEndPoint != null && filterOutTopLevelApi) currentApiEndPoint.value else null
 
-      Logger.debug("Adding verbose " + clazz + " @ " + currentApiPath)
-
       if (null != currentApiEndPoint && clazz.getName.endsWith("$")) {
+        Logger.debug("Adding verbose " + clazz + " @ " + currentApiPath)
+
         val parser = new PlayApiSpecParser(clazz, apiVersion, swaggerVersion, basePath, currentApiPath)
 
 	// 3scale doesn't understand {format}

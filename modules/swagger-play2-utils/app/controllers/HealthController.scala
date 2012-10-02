@@ -26,7 +26,7 @@ import scala.reflect.BeanProperty
 import scala.collection.JavaConversions._
 import javax.ws.rs.{ Path, QueryParam }
 
-@Api(value = "/admin", description = "Administrative operations")
+// @Api(value = "admin", description = "Administrative operations")
 object HealthController extends SwaggerBaseApiController {
   override protected def jaxbContext(): JAXBContext = JAXBContext.newInstance(classOf[Health])
   val LOGGER = LoggerFactory.getLogger(HealthController.getClass)

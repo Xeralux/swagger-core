@@ -1,9 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
+<!--  <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>5</version>
   </parent>
+-->
+<distributionManagement>
+    <snapshotRepository>
+        <id>xeralux</id>
+        <name>xeralux-snapshots</name>
+        <url>http://xeralux.artifactoryonline.com/xeralux/libs-snapshots-local</url>
+    </snapshotRepository>
+</distributionManagement>
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wordnik</groupId>
   <artifactId>swagger-project_2.9.1</artifactId>
