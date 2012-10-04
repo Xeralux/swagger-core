@@ -12,8 +12,8 @@ object ApplicationBuild extends Build {
     "org.codehaus.jackson" % "jackson-mapper-asl" % "1.8.5",
     "org.codehaus.jackson" % "jackson-core-asl" % "1.8.5",
     "org.slf4j" % "slf4j-api" % "1.6.4",
-    "com.wordnik" % "swagger-core_2.9.1" % "1.1-SNAPSHOT",
-    "com.wordnik" % "swagger-annotations_2.9.1" % "1.1-SNAPSHOT",
+    "com.wordnik" % "swagger-core_2.9.2" % "1.1-SNAPSHOT",
+    "com.wordnik" % "swagger-annotations_2.9.2" % "1.1-SNAPSHOT",
     "javax.ws.rs" % "jsr311-api" % "1.1.1")
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
