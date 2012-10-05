@@ -14,9 +14,9 @@ import java.lang.reflect.{ Type, Field, Modifier, Method }
 
 import play.api.Play.current
 import play.api.Logger
-import play.core.Router.RoutesCompiler.Route
-import play.core.Router.DynamicPart
-import play.core.Router.StaticPart
+import play.router.RoutesCompiler.Route
+import play.router.DynamicPart
+import play.router.StaticPart
 
 import scala.collection.JavaConversions._
 import scala.io.Source
@@ -31,7 +31,7 @@ import scala.io.Source
 object PlayApiReader {
   import scalax.file.Path
   import java.io.File
-  import play.core.Router.RoutesCompiler.RouteFileParser
+  import play.router.RoutesCompiler.RouteFileParser
   private val endpointsCache = scala.collection.mutable.Map.empty[Class[_], Documentation]
   private var _routesCache: Map[String, Route] = null
   var FORMAT_STRING = ".{format}"
@@ -71,7 +71,7 @@ object PlayApiReader {
     parsedRoutes match {
       case parser.Success(routes, _) => {
         routes map { rule => rule match {
-	  case route @ Route(_, _, _) =>
+	  case route: Route =>
             val routeName = route.call.packageName + "." + route.call.controller + "$." + route.call.method
             (routeName, route)
 	  case x @ _ =>
