@@ -7,11 +7,11 @@ object ApplicationBuild extends Build {
   val appVersion = "1.2.1-SNAPSHOT"
 
   val appDependencies: Seq[sbt.ModuleID] = Seq(
-    "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.0.0",
-    "com.fasterxml.jackson.core" % "jackson-annotations" % "2.0.0",
-    "org.slf4j" % "slf4j-api" % "1.6.4",
-    "com.wordnik" % "swagger-core_2.10" % "1.2.0",
-    "com.wordnik" % "swagger-annotations_2.10" % "1.2.0",
+    "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.0.4",
+    "com.fasterxml.jackson.core" % "jackson-annotations" % "2.0.4",
+    "org.slf4j" % "slf4j-api" % "1.6.3",
+    "com.wordnik" % "swagger-core_2.10" % "1.2.1-SNAPSHOT",
+    "com.wordnik" % "swagger-annotations_2.10" % "1.2.1-SNAPSHOT",
     "javax.ws.rs" % "jsr311-api" % "1.1.1")
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
