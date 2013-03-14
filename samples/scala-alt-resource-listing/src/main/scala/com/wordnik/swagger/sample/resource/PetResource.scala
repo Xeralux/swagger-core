@@ -113,6 +113,14 @@ trait PetResource extends RestResourceUtil {
   }
 }
 
+@Path("/resources/pet")
+@Api(value = "/pet",
+  description = "Operations about pets",
+  listingPath = "/resources/pet",
+  listingClass = "com.wordnik.swagger.sample.resource.PetResourceJSONXML")
+@Produces(Array("application/json", "application/xml"))
+class PetResourceListingJSON extends Help
+
 @Path("/pet")
 @Api(value = "/pet",
   description = "Operations about pets",

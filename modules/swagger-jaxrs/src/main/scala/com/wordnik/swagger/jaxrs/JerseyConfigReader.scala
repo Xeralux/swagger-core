@@ -22,33 +22,31 @@ import com.wordnik.swagger.core._
 import scala.collection.JavaConverters._
 
 class JerseyConfigReader(val sc: ServletConfig) extends ConfigReader {
-
-  def basePath(): String = findInitParam("swagger.api.basepath")
+  def basePath(): String = {
+    if (sc != null) sc.getInitParameter("swagger.api.basepath") else null
+  }
 
   def swaggerVersion(): String = {
     SwaggerSpec.version
   }
 
-  def apiVersion(): String = findInitParam("api.version")
+  def apiVersion(): String = {
+    if (sc != null) sc.getInitParameter("api.version") else null
+  }
 
   def modelPackages(): String = {
-    findInitParam("api.model.packages") match {
-      case str: String => str
+    sc match {
+      case s: ServletConfig => sc.getInitParameter("api.model.packages") match {
+        case str: String => str
+        case _ => ""
+      }
       case _ => ""
     }
   }
 
-  def apiFilterClassName(): String = findInitParam("swagger.security.filter")
-
-  /**
-   * Look for an initParameter in either the ServletConfig or the ServletContext
-   */
-  private def findInitParam(key: String): String = {
-    val scOpt = Option.apply(sc)
-    scOpt.map { sc => 
-      Option.apply(sc.getInitParameter(key))
-        .getOrElse(sc.getServletContext.getInitParameter(key))
-    } orNull
+  def apiFilterClassName(): String = {
+    if (sc != null)
+      sc.getInitParameter("swagger.security.filter")
+    else null
   }
-
 }

@@ -22,9 +22,11 @@ import com.wordnik.swagger.annotations._
 object PetApiController extends BaseApiController {
   var petData = new PetData
 
-  def getOptions(path: String) = Action { implicit request => JsonResponse(new value.ApiResponse(200, "Ok")) }
-
-  @ApiOperation(value = "Find pet by ID", notes = "Returns a pet", responseClass = "Pet", httpMethod = "GET")
+  @ApiOperation(value = "Find pet by ID", notes = "Returns a pet when ID < 10. " +
+    "ID > 10 or nonintegers will simulate API error conditions", responseClass = "models.Pet", httpMethod = "GET")
+  @ApiParamsImplicit(Array(
+    new ApiParamImplicit(name = "id", value = "ID of pet that needs to be fetched", required = true, dataType = "String", paramType = "path",
+      allowableValues = "range[0,10]")))
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid ID supplied"),
     new ApiError(code = 404, reason = "Pet not found")))

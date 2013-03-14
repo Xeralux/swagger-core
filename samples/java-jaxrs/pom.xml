@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>com.wordnik</groupId>
-    <artifactId>swagger-project_2.9.2</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <artifactId>swagger-project_2.10.0</artifactId>
+    <version>1.2.1-SNAPSHOT</version>
     <relativePath>../..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wordnik</groupId>
-  <artifactId>swagger-java-sample-app_2.9.2</artifactId>
+  <artifactId>swagger-java-sample-app_2.10.0</artifactId>
   <packaging>war</packaging>
   <name>swagger-java-jaxrs-app</name>
-  <version>1.2.2-SNAPSHOT</version>
+  <version>1.2.1-SNAPSHOT</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
@@ -80,16 +80,8 @@
   <dependencies>
     <dependency>
       <groupId>com.wordnik</groupId>
-<<<<<<< HEAD
-      <artifactId>swagger-jaxrs_2.9.2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>swagger-core_2.9.2</artifactId>
-=======
-      <artifactId>swagger-jaxrs_2.9.1</artifactId>
+      <artifactId>swagger-jaxrs_2.10.0</artifactId>
       <scope>compile</scope>
->>>>>>> df1e560c906dd8d7356c45b97780d963f617341f
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -97,17 +89,13 @@
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.9.2</artifactId>
+      <artifactId>scalatest_2.10.0</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
     </dependency>
   </dependencies>
 </project>

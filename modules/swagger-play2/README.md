@@ -3,28 +3,26 @@
 ## Overview
 This is a module to support the play2 framework from [playframework](http://www.playframework.org).  It is written in scala but can be used with either java or scala-based play2 applications.
 
-## Version History
-
-* Version 1.2.1 and greater support scala 2.10 and play 2.1.  If you need to use scala 2.9.x and play 2.0, please use 1.2.0.
- 
-Usage
------
-
-You can depend on pre-built libraries in maven central by adding the following dependency:
-
-```
-val appDependencies: Seq[sbt.ModuleID] = Seq(
-  "com.wordnik" %% "swagger-play2" % "1.2.1-SNAPSHOT"
-)
-```
-
-Or you can build from source.
-
 ```
 cd modules/swagger-play2
 
 play
 publish-local
+```
+
+You can depend on pre-built libraries in maven central by adding the following dependency:
+
+```
+val appDependencies: Seq[sbt.ModuleID] = Seq("com.wordnik" %% "swagger-play2" % "1.2.0")
+
+```
+
+You can then add swagger support to your app.  Of course, you can also pull the artifact from maven central:
+
+```
+  val appDependencies: Seq[sbt.ModuleID] = Seq(
+    "com.wordnik" %% "swagger-play2-utils" % "1.2.0")
+
 ```
 
 ### Adding Swagger to your Play2 app
@@ -34,8 +32,7 @@ There are just a couple steps to integrate your Play2 app with swagger.
 1.  Add the resource listing to your routes file (you can read more about the resource listing [here](https://github.com/wordnik/swagger-core/wiki/Resource-Listing)
 
 ```
-
-GET     /api-docs.json        controllers.ApiHelpController.getResources
+GET     /api-docs.json                      controllers.ApiHelpController.getResources
 
 ``` 
 
@@ -43,11 +40,16 @@ GET     /api-docs.json        controllers.ApiHelpController.getResources
 
 In your controller for, say your "pet" resource:
 
-```scala
+```
 @Api(value = "/pet", listingPath = "/api-docs.{format}/pet", description = "Operations about pets")
 object PetApiController extends Controller {
 
-  @ApiOperation(value = "Find pet by ID", notes = "Returns a pet", responseClass = "Pet", httpMethod = "GET")
+  @Path("/{id}")
+  @ApiOperation(value = "Find pet by ID", notes = "Returns a pet when ID < 10. " +
+    "ID > 10 or nonintegers will simulate API error conditions", responseClass = "Pet", httpMethod = "GET")
+  @ApiParamsImplicit(Array(
+    new ApiParamImplicit(name = "id", value = "ID of pet that needs to be fetched", required = true, dataType = "String", paramType = "path",
+      allowableValues = "range[0,10]")))
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid ID supplied"),
     new ApiError(code = 404, reason = "Pet not found")))
@@ -67,7 +69,7 @@ What this does is the following:
 
 * Tells swagger that the methods in this controller should be described under the `/api-docs.json/pet` path
 
-* The Routes file tells swagger that this API listens to `/{id}`
+* Tells swagger that this API listens to `/{id}`
 
 * Describes the operation as a `GET` with the documentation `Find pet by Id` with more detailed notes `Returns a pet ....`
 
@@ -81,6 +83,7 @@ In the routes file, you then wire this api as follows:
 GET     /api-docs.json/pet            controllers.ApiHelpController.getResource(path = "/pet")
 
 GET     /pet.json/:id                 controllers.PetApiController.getPetById(id)
+
 ```
 
 This will "attach" the /api-docs.json/pet api to the swagger resource listing, and the method to the `getPetById` method above

@@ -27,6 +27,7 @@ class IntegrationSpec extends Specification {
     	running(TestServer(3333)) {
       	val json = Source.fromURL("http://localhost:3333/api-docs.json").mkString
       	val doc = mapper.readValue(json, classOf[Documentation])
+
 		    doc.getApis.size must_==(4)
 		    (doc.getApis.asScala.map(_.getPath).toSet &
 		      Set(
