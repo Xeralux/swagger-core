@@ -1,12 +1,40 @@
 # Swagger Core library
 
+## [See the Wiki!](https://github.com/wordnik/swagger-core/wiki)
+The [github wiki](https://github.com/wordnik/swagger-core/wiki) contains documentation, samples, etc.  Start there
+
+
 ## Overview
 This is a project to build the swagger-core library, which is required for the Wordnik 
 implementation of the Swagger spec.  You can find out more about both the spec and the
 framework at http://swagger.wordnik.com.  For more information about Wordnik's APIs, please
-visit http://developer.wordnik.com.  
+visit http://developer.wordnik.com.
 
 ## Version history
+v1.2.0 Nov-27 2012
+
+<li>- Updated listing path to /api-docs.json
+
+<li>- Moved swagger-play2 and swagger-play2-utils to maven central
+
+v1.1.0 Aug-22 2012
+
+<li>- Spec [clarifications](https://github.com/wordnik/swagger-core/wiki/Changelog)
+
+<li>- Updated to Jackson 2.0.x, added sample with [scala case classes](https://github.com/wordnik/swagger-core/tree/master/samples/scala-jaxrs-jackson2)
+
+<li>- Play 2.0.2 supported
+
+<li>- Pluggable model processor, added configurable package introspection
+
+<li>- Feature parity between JAX-RS & Play 2, java, scala
+
+<li>- Made .{format} [configurable](https://github.com/wordnik/swagger-core/tree/master/samples/scala-jaxrs-no-format), see [here](https://github.com/wordnik/swagger-core/blob/master/samples/scala-jaxrs-no-format/src/main/scala/com/wordnik/swagger/sample/Bootstrap.scala#L24)
+
+<li>- Added support for alternate resource listing, examples in [scala](https://github.com/wordnik/swagger-core/tree/master/samples/scala-alt-resource-listing) and [java](https://github.com/wordnik/swagger-core/tree/master/samples/java-alt-resource-listing)
+
+<li>- Moved swagger spec to github [wiki](https://github.com/wordnik/swagger-core/wiki)
+
 
 v1.01 Jan-31 2012
 
@@ -38,23 +66,31 @@ You need the following installed and available in your $PATH:
 
 <li>- Apache maven 3.0.3 or greater (http://maven.apache.org/)
 
-<li>- Scala 2.8.1 (http://www.scala-lang.org).
+<li>- Scala 2.9.1-1 [available here](http://www.scala-lang.org).  Note that 2.9.1 has a defect which causes problems with Jax-RS
 
-### To build from source (currently 1.1-SNAPSHOT)
-<pre>
+### To build from source (currently 1.1.1-SNAPSHOT)
+```
 # first time building locally
 mvn -N
-</pre>
+```
 
-Subsequent builds
-<pre>
+Subsequent builds:
+```
 mvn install
-</pre>
+```
 
-This will build the modules and sample apps.  
+This will build the modules and sample apps.
+
+Of course if you don't want to build locally you can grab artifacts from maven central:
+
+`http://repo1.maven.org/maven2/com/wordnik/`
+
+And Play2 modules are in our github repo:
+
+`http://wordnik.github.com/repository/com.wordnik`
 
 ## Sample Apps
-There are a number of sample apps in the 
+There are a number of sample apps in the `samples` folder:
 
 [java-jaxrs](/wordnik/swagger-core/tree/master/samples/java-jaxrs/README.md) Java-based swagger server with JAX-RS
 
@@ -71,17 +107,28 @@ Scala-based swagger server using wordnik-oss utils for Application Performance M
 
 To run a sample app after initial compile:
 
-<pre>
+```
 # run scala-jaxrs sample app
 cd samples/scala-jaxrs
 
 mvn jetty:run
-</pre>
+```
 
-Of course if you don't want to build locally you can grab artifacts from maven central:
+And the [Play2](http://playframework.org) samples:
 
-http://repo1.maven.org/maven2/com/wordnik/
+[java-play2](https://github.com/wordnik/swagger-core/tree/master/samples/java-play2) Java-based Play2 sample app
 
+[scala-play2](https://github.com/wordnik/swagger-core/tree/master/samples/scala-play2) Scala-based Play2 sample app
+
+[scala-play2-no-format](https://github.com/wordnik/swagger-core/tree/master/samples/scala-play2-no-format) Scala-based Play2 sample app without the .{format} in resource listing
+
+To run the Play2 sample apps:
+
+```
+cd samples/java-play2
+
+play run
+```
 
 License
 -------

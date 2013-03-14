@@ -17,34 +17,39 @@
 package com.wordnik.swagger.jaxrs
 
 import com.wordnik.swagger.core._
+import com.wordnik.swagger.core.util.TypeUtil
 import com.wordnik.swagger.annotations._
 
 import org.slf4j.LoggerFactory
 
-import com.sun.jersey.api.core.ResourceConfig
-
-import javax.ws.rs.{ Path, GET }
-import javax.ws.rs.core.{ UriInfo, HttpHeaders, Context, Response }
 import javax.servlet.ServletConfig
 
+import javax.ws.rs.{ Path, GET }
+import javax.ws.rs.core.{ UriInfo, HttpHeaders, Context, Response, Application }
+
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 trait ApiListing {
   private val logger = LoggerFactory.getLogger(classOf[ApiListing])
 
   @GET
   @ApiOperation(value = "Returns list of all available api endpoints",
-    responseClass = "DocumentationEndPoint", multiValueResponse = true)
-  def getAllApis(@Context sc: ServletConfig,
-    @Context rc: ResourceConfig,
+    responseClass = "List[DocumentationEndPoint]")
+  def getAllApis(
+    @Context sc: ServletConfig,
+    @Context app: Application,
     @Context headers: HttpHeaders,
     @Context uriInfo: UriInfo): Response = {
 
-    val configReader = ConfigReaderFactory.getConfigReader(sc)
-    val apiVersion = configReader.getApiVersion()
-    val swaggerVersion = configReader.getSwaggerVersion()
-    val basePath = configReader.getBasePath()
-    val apiFilterClassName = configReader.getApiFilterClassName()
+    val reader = ConfigReaderFactory.getConfigReader(sc)
+    val apiVersion = reader.apiVersion()
+    val swaggerVersion = reader.swaggerVersion()
+    val basePath = reader.basePath()
+    val apiFilterClassName = reader.apiFilterClassName()
+
+    reader.modelPackages.split(",").foreach(p => TypeUtil.addAllowablePackage(p))
+
     var apiFilter: AuthorizationFilter = null
     if (null != apiFilterClassName) {
       try {
@@ -56,14 +61,14 @@ trait ApiListing {
       }
     }
 
-    val resources = rc.getRootResourceClasses
+    val resources = app.getClasses.asScala
     val apiListingEndpoint = this.getClass.getAnnotation(classOf[Api])
     val resourceListingType = this.getClass.getAnnotation(classOf[javax.ws.rs.Produces]).value.toSet
 
     val allApiDoc = new Documentation
     resources.foreach(resource => {
       val wsPath = resource.getAnnotation(classOf[Api])
-      logger.debug("processing resource path " + wsPath)
+      logger.debug("processing resource " + wsPath)
       if (null != wsPath && wsPath.value != JaxrsApiReader.LIST_RESOURCES_PATH) {
         val path = {
           if ("" != wsPath.listingPath) wsPath.listingPath
@@ -85,18 +90,18 @@ trait ApiListing {
         val hasCompatibleMediaType = {
           // check accept type first
           val resourceMediaType = {
-            if (headers.getRequestHeaders().contains("Content-type")) {
+            val lowerHeaders = headers.getRequestHeaders.asScala.map(f => (f._1.toLowerCase, f._2)).toMap
+
+            if (lowerHeaders.contains("content-type")) {
               logger.debug("using content-type headers")
-              val objs = new scala.collection.mutable.ListBuffer[String]
-              headers.getRequestHeaders()("Content-type").foreach(h =>
-                h.split(",").foreach(str => objs += str.trim))
-              objs.toSet
-            } else if (headers.getRequestHeaders().contains("Accept")) {
+              (for(h <- lowerHeaders("content-type")) yield {
+                h.split(";")(0)
+              }).toSet
+            } else if (lowerHeaders.contains("accept")) {
               logger.debug("using accept headers")
-              val objs = new scala.collection.mutable.ListBuffer[String]
-              headers.getRequestHeaders()("Accept").foreach(h =>
-                h.split(",").foreach(str => objs += str.trim))
-              objs.toSet
+              (for(h <- lowerHeaders("accept")) yield {
+                h.split(";")(0)
+              }).toSet
             } else {
               logger.debug("using produces annotations")
               resource.getAnnotation(classOf[javax.ws.rs.Produces]).value.toSet

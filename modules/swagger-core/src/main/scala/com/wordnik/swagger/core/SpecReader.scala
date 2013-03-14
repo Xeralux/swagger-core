@@ -19,27 +19,37 @@ package com.wordnik.swagger.core
 import com.wordnik.swagger.annotations._
 import com.wordnik.swagger.core.util.ReflectionUtil
 import com.wordnik.swagger.core.ApiValues._
-import com.wordnik.swagger.core.util.TypeUtil
-
+import com.wordnik.swagger.core.util.{ TypeUtil, JsonUtil }
+import com.wordnik.swagger.jsonschema._
 import org.slf4j.LoggerFactory
 
-import java.lang.reflect.{ Type, Field, Modifier, Method }
+import com.fasterxml.jackson.databind.node._
+
+import java.lang.reflect.{ Type, TypeVariable, Field, Modifier, Method, ParameterizedType }
 import java.lang.annotation.Annotation
 import javax.xml.bind.annotation._
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+import sun.reflect.generics.reflectiveObjects.{ ParameterizedTypeImpl, TypeVariableImpl }
+
+import scala.collection.JavaConverters._
 
 object ApiPropertiesReader {
+  var schemaProvider: JsonSchemaProvider = new SwaggerJsonSchemaProvider
+
   private val modelsCache = scala.collection.mutable.Map.empty[Class[_], DocumentationObject]
 
   def read(hostClass: Class[_]): DocumentationObject = {
     modelsCache.get(hostClass) match {
       case None => {
-        !hostClass.isEnum match {
-          case true => val docObj = new ApiModelParser(hostClass).parse; modelsCache += hostClass -> docObj; docObj
+        !hostClass.isEnum && !hostClass.getName.startsWith("java.lang.") match {
+          case true => {
+            val docObj = schemaProvider.read(hostClass)
+            modelsCache += hostClass -> docObj
+            docObj
+          }
           case _ => null
         }
       }
@@ -48,12 +58,12 @@ object ApiPropertiesReader {
     }
   }
 
-  def readName(hostClass: Class[_], isSimple:Boolean=true): String = {
+  def readName(hostClass: Class[_], isSimple: Boolean = true): String = {
     new ApiModelParser(hostClass).readName(hostClass, isSimple)
   }
 
-  def getDataType(genericReturnType: Type, returnType: Type):String = {
-    var paramType:String = null
+  def getDataType(genericReturnType: Type, returnType: Type): String = {
+    var paramType: String = null
     if (TypeUtil.isParameterizedList(genericReturnType)) {
       val parameterizedType = genericReturnType.asInstanceOf[java.lang.reflect.ParameterizedType]
       val valueType = parameterizedType.getActualTypeArguments.head
@@ -68,18 +78,21 @@ object ApiPropertiesReader {
       val keyType = typeArgs(0)
       val valueType = typeArgs(1)
 
-      val keyName:String = getDataType(keyType, keyType)
-      val valueName:String = getDataType(valueType, valueType)
+      val keyName: String = getDataType(keyType, keyType)
+      val valueName: String = getDataType(valueType, valueType)
       paramType = "Map[" + keyName + "," + valueName + "]"
     } else if (!returnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl]) && returnType.asInstanceOf[Class[_]].isArray) {
-      var arrayClass= returnType.asInstanceOf[Class[_]].getComponentType
+      var arrayClass = returnType.asInstanceOf[Class[_]].getComponentType
       paramType = "Array[" + arrayClass.getSimpleName + "]"
     } else {
       //we might also have properties that are parametarized by not assignable to java collections. Examples: Scala collections
       ///This step will ignore all those fields.
-      if (!genericReturnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl])){
+      if (genericReturnType.getClass.isAssignableFrom(classOf[TypeVariableImpl[_]])) {
+        paramType = genericReturnType.asInstanceOf[TypeVariableImpl[_]].getName
+      }
+      else if (!genericReturnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl])) {
         paramType = readName(genericReturnType.asInstanceOf[Class[_]])
-      }else{
+      } else {
         //handle scala options
         val parameterizedType: java.lang.reflect.ParameterizedType = genericReturnType.asInstanceOf[java.lang.reflect.ParameterizedType]
         if (parameterizedType.getRawType == classOf[Option[_]]) {
@@ -91,8 +104,8 @@ object ApiPropertiesReader {
     paramType
   }
 
-  def getGenericTypeParam(genericReturnType: Type, returnType: Type):String = {
-    var typeParam:String = null
+  def getGenericTypeParam(genericReturnType: Type, returnType: Type): String = {
+    var typeParam: String = null
     if (TypeUtil.isParameterizedList(genericReturnType) ||
       TypeUtil.isParameterizedSet(genericReturnType)) {
       val parameterizedType = genericReturnType.asInstanceOf[java.lang.reflect.ParameterizedType]
@@ -107,12 +120,12 @@ object ApiPropertiesReader {
       val valueName = readName(valueType.asInstanceOf[Class[_]], false)
       typeParam = "Map[" + keyName + "," + valueName + "]"
     } else if (!returnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl]) && returnType.asInstanceOf[Class[_]].isArray) {
-      var arrayClass= returnType.asInstanceOf[Class[_]].getComponentType
+      var arrayClass = returnType.asInstanceOf[Class[_]].getComponentType
       typeParam = arrayClass.getName
     } else {
       //we might also have properties that are parametarized by not assignable to java collections. Examples: Scala collections
       ///This step will ignore all those fields.
-      if (!genericReturnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl])){
+      if (!genericReturnType.getClass.isAssignableFrom(classOf[ParameterizedTypeImpl])) {
         typeParam = readName(genericReturnType.asInstanceOf[Class[_]], false)
       }
     }

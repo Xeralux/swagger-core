@@ -1,18 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>com.wordnik</groupId>
     <artifactId>swagger-project_2.9.2</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2.2-SNAPSHOT</version>
     <relativePath>../..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wordnik</groupId>
   <artifactId>swagger-jaxrs-utils_2.9.2</artifactId>
   <packaging>jar</packaging>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2.2-SNAPSHOT</version>
   <name>swagger-jaxrs-utils</name>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
     <defaultGoal>install</defaultGoal>
     <resources>
       <resource>
@@ -43,6 +43,7 @@
     </dependency>
     <dependency>
       <groupId>com.wordnik</groupId>
+<<<<<<< HEAD
       <artifactId>swagger-core_2.9.2</artifactId>
       <version>${pom.version}</version>
     </dependency>
@@ -62,6 +63,21 @@
       <artifactId>jersey-server</artifactId>
       <version>${jersey-version}</version>
       <scope>compile</scope>
+=======
+      <artifactId>swagger-core_2.9.1</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>common-utils_2.9.1</artifactId>
+      <version>1.1.1</version>
+      <exclusions>
+      	<exclusion>
+      		<artifactId>slf4j-log4j12</artifactId>
+      		<groupId>org.slf4j</groupId>
+      	</exclusion>
+      </exclusions>
+>>>>>>> df1e560c906dd8d7356c45b97780d963f617341f
     </dependency>
   </dependencies>
 </project>

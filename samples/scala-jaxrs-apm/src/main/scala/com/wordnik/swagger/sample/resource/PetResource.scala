@@ -27,16 +27,11 @@ import com.wordnik.swagger.sample.data.{ PetData }
 import com.wordnik.swagger.sample.model.{ Pet }
 import com.wordnik.swagger.sample.exception.NotFoundException
 
-import com.sun.jersey.spi.resource.Singleton
-
 import javax.ws.rs.core.Response
 import javax.ws.rs._
 import java.lang.Exception
-import com.sun.jersey.api.JResponse
 
 trait PetResource extends RestResourceUtil {
-  var petData = new PetData
-
   @GET
   @Path("/{petId}")
   @ApiOperation(value = "Find pet by ID", notes = "Returns a pet when ID < 10. " +
@@ -47,7 +42,7 @@ trait PetResource extends RestResourceUtil {
   def getPetById(
     @ApiParam(value = "ID of pet that needs to be fetched", required = true, allowableValues = "range[0,10]")@PathParam("petId") petId: String) = {
     Profile("/pet/*", {
-      var pet = petData.getPetbyId(getLong(0, 100000, 0, petId))
+      var pet = PetData.getPetbyId(getLong(0, 100000, 0, petId))
       if (null != pet) {
         Response.ok.entity(pet).build
       } else {
@@ -63,7 +58,7 @@ trait PetResource extends RestResourceUtil {
   def addPet(
     @ApiParam(value = "Pet object that needs to be added to the store", required = true) pet: Pet) = {
     Profile("/pet (POST)", {
-      petData.addPet(pet)
+      PetData.addPet(pet)
       Response.ok.entity("SUCCESS").build
     })
   }
@@ -77,7 +72,7 @@ trait PetResource extends RestResourceUtil {
   def updatePet(
     @ApiParam(value = "Pet object that needs to be added to the store", required = true) pet: Pet) = {
     Profile("/pet (PUT)", {
-      petData.addPet(pet)
+      PetData.addPet(pet)
       Response.ok.entity("SUCCESS").build
     })
   }
@@ -86,15 +81,15 @@ trait PetResource extends RestResourceUtil {
   @Path("/findByStatus")
   @ApiOperation(value = "Finds Pets by status",
     notes = "Multiple status values can be provided with comma seperated strings",
-    responseClass = "com.wordnik.swagger.sample.model.Pet", multiValueResponse = true)
+    responseClass = "List[com.wordnik.swagger.sample.model.Pet]")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid status value")))
   def findPetsByStatus(
     @ApiParam(value = "Status values that need to be considered for filter", required = true, defaultValue = "available",
       allowableValues = "available,pending,sold", allowMultiple = true)@QueryParam("status") status: String) = {
     Profile("/pet/findByStatus", {
-      var results = petData.findPetByStatus(status)
-      JResponse.ok(results).build
+      var results = PetData.findPetByStatus(status)
+      Response.ok(results).build
     })
   }
 
@@ -102,7 +97,7 @@ trait PetResource extends RestResourceUtil {
   @Path("/findByTags")
   @ApiOperation(value = "Finds Pets by tags",
     notes = "Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
-    responseClass = "com.wordnik.swagger.sample.model.Pet", multiValueResponse = true)
+    responseClass = "List[com.wordnik.swagger.sample.model.Pet]")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid tag value")))
   @Deprecated
@@ -110,22 +105,18 @@ trait PetResource extends RestResourceUtil {
     @ApiParam(value = "Tags to filter by", required = true,
       allowMultiple = true)@QueryParam("tags") tags: String) = {
     Profile("/pet/findByTags", {
-      var results = petData.findPetByTags(tags)
-      JResponse.ok(results).build
+      var results = PetData.findPetByTags(tags)
+      Response.ok(results).build
     })
   }
 }
 
 @Path("/pet.json")
 @Api(value = "/pet", description = "Operations about pets")
-@Singleton
 @Produces(Array("application/json"))
-class PetResourceJSON extends Help
-  with PetResource
+class PetResourceJSON extends PetResource
 
 @Path("/pet.xml")
 @Api(value = "/pet", description = "Operations about pets")
-@Singleton
 @Produces(Array("application/xml"))
-class PetResourceXML extends Help
-  with PetResource
+class PetResourceXML extends PetResource

@@ -51,8 +51,6 @@ class DocumentationSerializationTest extends FlatSpec with ShouldMatchers {
     
     val baos = new ByteArrayOutputStream
     m.marshal(doc, baos)
-    
-    println(baos.toString)
   }
   
   def getDoc = {
@@ -64,7 +62,6 @@ class DocumentationSerializationTest extends FlatSpec with ShouldMatchers {
     val operation = new DocumentationOperation("GET",
       "gets an item from a store",
       "returns just one")
-    operation.setResponseTypeInternal("String")
     api.addOperation(operation)
     doc.addApi(api)
     doc
