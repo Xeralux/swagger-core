@@ -66,7 +66,7 @@ You need the following installed and available in your $PATH:
 
 <li>- Apache maven 3.0.3 or greater (http://maven.apache.org/)
 
-<li>- Scala 2.9.1-1 [available here](http://www.scala-lang.org).  Note that 2.9.1 has a defect which causes problems with Jax-RS
+<li>- Scala 2.10 [available here](http://www.scala-lang.org)
 
 ### To build from source (currently 1.1.1-SNAPSHOT)
 ```
