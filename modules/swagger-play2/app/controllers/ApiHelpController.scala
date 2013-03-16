@@ -1,3 +1,19 @@
+/**
+ *  Copyright 2012 Wordnik, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package controllers
 
 import com.wordnik.swagger.core._
@@ -13,34 +29,55 @@ import play.api.data.validation.Constraints._
 import play.api.Logger
 import play.modules.swagger.ApiHelpInventory
 
-import org.codehaus.jackson.map.ObjectMapper
-import org.codehaus.jackson.map.SerializationConfig
-
 import javax.xml.bind.JAXBContext
+import javax.xml.bind.annotation._
+
 import java.io.StringWriter
 
 import scala.reflect.BeanProperty
 import scala.collection.JavaConversions._
 
-/**
- * This controller exposes swagger compatiable help apis.<br/>
- * The routing for the two apis supported by this controller is automatically injected by SwaggerPlugin
- *
- * @author ayush
- * @since 10/9/11 4:37 PM
- *
- */
+object ErrorResponse {
+  val ERROR = 1
+  val WARNING = 2
+  val INFO = 3
+  val OK = 4
+  val TOO_BUSY = 5
+}
+
+class ErrorResponse(@XmlElement var code: Int, @XmlElement var message: String) {
+  def this() = this(0, null)
+
+  @XmlTransient
+  def getCode(): Int = code
+  def setCode(code: Int) = this.code = code
+
+  def getType(): String = code match {
+    case ErrorResponse.ERROR => "error"
+    case ErrorResponse.WARNING => "warning"
+    case ErrorResponse.INFO => "info"
+    case ErrorResponse.OK => "ok"
+    case ErrorResponse.TOO_BUSY => "too busy"
+    case _ => "unknown"
+  }
+  def setType(`type`: String) = {}
+
+  def getMessage(): String = message
+  def setMessage(message: String) = this.message = message
+}
+
 object ApiHelpController extends SwaggerBaseApiController {
   /** Generate a complete set of swagger docs - in one file */
   def getVerboseResources() = Action { request =>
-    implicit val requestHeader: RequestHeader = request;
+    implicit val requestHeader: RequestHeader = request
+    
     val resources = ApiHelpInventory.getVerboseHelpJson()
-
     returnValue(request, resources)
   }
-  
+
   def getResources() = Action { request =>
-    implicit val requestHeader: RequestHeader = request;
+    implicit val requestHeader: RequestHeader = request
+
     val resources = returnXml(request) match {
       case true => ApiHelpInventory.getRootHelpXml()
       case false => ApiHelpInventory.getRootHelpJson()
@@ -50,30 +87,47 @@ object ApiHelpController extends SwaggerBaseApiController {
 
   def getResource(path: String) = Action { request =>
     implicit val requestHeader: RequestHeader = request
+
     val help = returnXml(request) match {
       case true => ApiHelpInventory.getPathHelpXml(path)
       case false => ApiHelpInventory.getPathHelpJson(path)
     }
-    returnValue(request, help)
+    Option(help) match {
+      case Some(help) => returnValue(request, help)
+      case None => {
+        val msg = new ErrorResponse(500, "api listing for path " + path + " not found")
+        Logger.error(msg.message)
+        returnXml(request) match {
+          case true => {
+            new SimpleResult[String](header = ResponseHeader(500), body = play.api.libs.iteratee.Enumerator(toXmlString(msg))).as("application/xml")
+          }
+          case false => {
+            new SimpleResult[String](header = ResponseHeader(500), body = play.api.libs.iteratee.Enumerator(toJsonString(msg))).as("application/json")
+          }
+        }
+      }
+    }
   }
 }
 
 class SwaggerBaseApiController extends Controller {
   protected def jaxbContext(): JAXBContext = JAXBContext.newInstance(classOf[String])
   protected def returnXml(request: Request[_]) = request.path.contains(".xml")
-  protected val ok = "OK"
+  protected val ok = "ok"
   protected val AccessControlAllowOrigin = ("Access-Control-Allow-Origin", "*")
 
-  protected def XmlResponse(o: Any) = {
-    val xmlValue = {
-      if (o.getClass.equals(classOf[String])) {
-        o.asInstanceOf[String]
-      } else {
-        val stringWriter = new StringWriter()
-        jaxbContext.createMarshaller().marshal(o, stringWriter)
-        stringWriter.toString
-      }
+  def toXmlString(data: Any): String = {
+    if (data.getClass.equals(classOf[String])) {
+      data.asInstanceOf[String]
+    } else {
+      val stringWriter = new StringWriter()
+      jaxbContext.createMarshaller().marshal(data, stringWriter)
+      stringWriter.toString
     }
+  }
+
+  protected def XmlResponse(data: Any) = {
+    val xmlValue = toXmlString(data)
     new SimpleResult[String](header = ResponseHeader(200), body = play.api.libs.iteratee.Enumerator(xmlValue)).as("application/xml")
   }
 
@@ -85,18 +139,17 @@ class SwaggerBaseApiController extends Controller {
     response.withHeaders(AccessControlAllowOrigin)
   }
 
-  protected def JsonResponse(data: Any) = {
-    val jsonValue: String = {
-      if (data.getClass.equals(classOf[String])) {
-        data.asInstanceOf[String]
-      } else {
-        val mapper = new ObjectMapper()
-        val w = new StringWriter()
-        mapper.getSerializationConfig().disable(SerializationConfig.Feature.AUTO_DETECT_IS_GETTERS)
-        mapper.writeValue(w, data)
-        w.toString()
-      }
+  def toJsonString(data: Any): String = {
+    if (data.getClass.equals(classOf[String])) {
+      data.asInstanceOf[String]
+    } else {
+      val mapper = JsonUtil.getJsonMapper
+      mapper.writeValueAsString(data)
     }
+  }
+
+  protected def JsonResponse(data: Any) = {
+    val jsonValue = toJsonString(data)
     new SimpleResult[String](header = ResponseHeader(200), body = play.api.libs.iteratee.Enumerator(jsonValue)).as("application/json")
   }
 }

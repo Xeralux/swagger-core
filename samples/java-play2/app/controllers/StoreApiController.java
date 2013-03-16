@@ -1,5 +1,7 @@
 package controllers;
 
+import java.io.IOException;
+
 import api.*;
 
 import com.wordnik.swagger.core.*;
@@ -14,7 +16,7 @@ import play.mvc.*;
 
 import views.html.*;
 
-@Api(value = "/store", description = "Operations about store")
+@Api(value = "/store", listingPath = "/api-docs.json/store", description = "Operations about store")
 public class StoreApiController extends BaseApiController {
 	static StoreData storeData = new StoreData();
 
@@ -39,7 +41,12 @@ public class StoreApiController extends BaseApiController {
 	@ApiParamsImplicit(@ApiParamImplicit(name = "body", value = "order placed for purchasing the pet", required = true, dataType = "Order", paramType = "body"))
 	public static Result placeOrder() {
 		Object o = request().body().asJson();
-		storeData.placeOrder((Order)o);
+		try {
+			Order order = (Order) BaseApiController.mapper.readValue(o.toString(), Order.class);
+			storeData.placeOrder(order);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return JsonResponse("");
 	}
 

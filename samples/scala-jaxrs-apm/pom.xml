@@ -1,39 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>com.wordnik</groupId>
-    <artifactId>swagger-project_2.9.2</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <artifactId>swagger-project_2.10</artifactId>
+    <version>1.2.1-SNAPSHOT</version>
     <relativePath>../..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wordnik</groupId>
-  <artifactId>swagger-scala-apm-sample-app_2.9.2</artifactId>
+  <artifactId>swagger-scala-apm-sample-app_2.10</artifactId>
   <packaging>war</packaging>
   <name>swagger-scala-sample-apm-app</name>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2.1-SNAPSHOT</version>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>scala-compile-first</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>add-source</goal>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>scala-test-compile</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -57,7 +36,6 @@
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>${jetty.maven.version}</version>
         <configuration>
           <webAppConfig>
             <contextPath>/api</contextPath>
@@ -92,6 +70,9 @@
             <goals>
               <goal>stop</goal>
             </goals>
+            <configuration>
+              <scanIntervalSeconds>0</scanIntervalSeconds>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -105,12 +86,12 @@
     </dependency>
     <dependency>
       <groupId>com.wordnik</groupId>
-      <artifactId>swagger-jaxrs_2.9.2</artifactId>
+      <artifactId>swagger-jaxrs_2.10</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.wordnik</groupId>
-      <artifactId>swagger-jaxrs-utils_2.9.2</artifactId>
+      <artifactId>swagger-jaxrs-utils_2.10</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -119,7 +100,7 @@
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.9.2</artifactId>
+      <artifactId>scalatest_2.10</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

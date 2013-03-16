@@ -24,19 +24,15 @@ import com.wordnik.swagger.sample.model.User
 import com.wordnik.swagger.sample.data.UserData
 import com.wordnik.swagger.sample.exception.NotFoundException
 
-import com.sun.jersey.spi.resource.Singleton
-
 import javax.ws.rs.core.Response
 import javax.ws.rs._
 
 trait UserResource extends RestResourceUtil {
-  var userData = new UserData
-
   @POST
   @ApiOperation(value = "Create user", notes = "This can only be done by the logged in user.")
   def createUser(
     @ApiParam(value = "Created user object", required = true) user: User) = {
-    userData.addUser(user)
+    UserData.addUser(user)
     Response.ok.entity("").build
   }
 
@@ -49,7 +45,7 @@ trait UserResource extends RestResourceUtil {
   def updateUser(
     @ApiParam(value = "name that need to be deleted", required = true)@PathParam("username") username: String,
     @ApiParam(value = "Updated user object", required = true) user: User) = {
-    userData.addUser(user)
+    UserData.addUser(user)
     Response.ok.entity("").build
   }
 
@@ -61,7 +57,7 @@ trait UserResource extends RestResourceUtil {
     new ApiError(code = 404, reason = "User not found")))
   def deleteUser(
     @ApiParam(value = "The name that needs to be deleted", required = true)@PathParam("username") username: String) = {
-    userData.removeUser(username)
+    UserData.removeUser(username)
     Response.ok.entity("").build
   }
 
@@ -73,7 +69,7 @@ trait UserResource extends RestResourceUtil {
     new ApiError(code = 404, reason = "User not found")))
   def getUserByName(
     @ApiParam(value = "The name that needs to be fetched. Use user1 for testing. ", required = true)@PathParam("username") username: String) = {
-    var user = userData.findUserByName(username)
+    var user = UserData.findUserByName(username)
     if (null != user) {
       Response.ok.entity(user).build
     } else {
@@ -98,17 +94,7 @@ trait UserResource extends RestResourceUtil {
   def logoutUser() = Response.ok.entity("goodbye").build
 }
 
-@Path("/resources/user")
-@Api(value = "/user",
-  description = "Operations about users",
-  listingPath = "/resources/user",
-  listingClass = "com.wordnik.swagger.sample.resource.UserResourceJSONXML")
-@Singleton
-@Produces(Array("application/json", "application/xml"))
-class UserResourceListingJSON extends Help
-
 @Path("/user")
-@Singleton
 @Api(value = "/user",
   description = "Operations about users",
   listingPath = "/resources/user")

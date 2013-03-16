@@ -16,24 +16,10 @@
 
 package com.wordnik.swagger.jaxrs
 
-import com.wordnik.swagger.core._
-
-import javax.servlet.ServletConfig
-
-class ConfigReader(val sc: ServletConfig) {
-  def getBasePath(): String = {
-    if (sc != null) sc.getInitParameter("swagger.api.basepath") else null
-  }
-
-  def getSwaggerVersion(): String = {
-    SwaggerSpec.version
-  }
-
-  def getApiVersion(): String = {
-    if (sc != null) sc.getInitParameter("api.version") else null
-  }
-
-  def getApiFilterClassName(): String = {
-    if (sc != null) sc.getInitParameter("swagger.security.filter") else null
-  }
+abstract class ConfigReader {
+  def basePath(): String
+  def swaggerVersion(): String
+  def apiVersion(): String
+  def modelPackages(): String
+  def apiFilterClassName(): String
 }

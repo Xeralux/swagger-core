@@ -36,7 +36,8 @@ class ResourceReaderTest extends FlatSpec with ShouldMatchers {
     var docObj = ApiPropertiesReader.read(classOf[SampleOutput])
     assert(docObj != null)
     assert((docObj.getFields.map(f => f.name).toSet & Set("theName", "theValue")).size === 2)
-    assert(docObj.getFields.filter(f => f.name == "id")(0).required == true)
+    assert(docObj.getFields.filter(f => f.name == "id")(0).required === true)
+    assert(docObj.getFields.filter(f => f.name == "theName")(0).required === false)
   }
 
   behavior of "ApiReader"
@@ -48,6 +49,7 @@ class ResourceReaderTest extends FlatSpec with ShouldMatchers {
       null,
       null,
       null)
+      
     assert(doc.apiVersion == "1.123")
     assert(doc.swaggerVersion == "2.345")
     assert(doc.basePath == "http://my.host.com/basepath")
@@ -110,6 +112,5 @@ class ResourceReaderTest extends FlatSpec with ShouldMatchers {
     val api = doc.getApis.filter(a => (a.path == "/basic.{format}/getStringList"))(0)
     val responseclass = api.getOperations().get(0).getResponseClass()
     assert(responseclass === "List[String]")
-
   }
 }

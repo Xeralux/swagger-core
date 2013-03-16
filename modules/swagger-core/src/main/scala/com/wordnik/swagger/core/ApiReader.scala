@@ -41,7 +41,7 @@ object ApiMethodType {
 
 trait ApiSpecParserTrait extends BaseApiParser {
   private val LOGGER = LoggerFactory.getLogger(classOf[ApiSpecParserTrait])
-  // don't understand?  Ask @greggcarrier
+
   def hostClass: Class[_]
   def documentation: Documentation
   def apiEndpoint: Api
@@ -75,7 +75,7 @@ trait ApiSpecParserTrait extends BaseApiParser {
       docParam.allowableValues = convertToAllowableValues(apiParam.allowableValues)
     } catch {
       case e: RuntimeException =>
-        LOGGER.error("Allowable values annotation is wrong in method  " + method +
+        LOGGER.error("Allowable values annotation problem in method  " + method +
           "for parameter " + docParam.name)
         e.printStackTrace()
     }
@@ -84,6 +84,7 @@ trait ApiSpecParserTrait extends BaseApiParser {
     docParam.paramAccess = readString(apiParam.access)
   }
 
+  private val ListRegex: scala.util.matching.Regex = """List\[(.*?)\]""".r
   def parseMethod(method: Method): Any = {
     val apiOperation = method.getAnnotation(classOf[ApiOperation])
     val apiErrors = method.getAnnotation(classOf[ApiErrors])
@@ -107,8 +108,10 @@ trait ApiSpecParserTrait extends BaseApiParser {
         docOperation.notes = readString(apiOperation.notes)
         docOperation.setTags(toObjectList(apiOperation.tags))
         docOperation.nickname = method.getName
-        val apiResponseValue = readString(apiOperation.responseClass)
-        val isResponseMultiValue = apiOperation.multiValueResponse
+        val (apiResponseValue: String, isResponseMultiValue: Boolean) = ((responseClass: String, isMulti: Boolean) => responseClass match {
+          case ListRegex(respClass) => (respClass, true)
+          case _ => (responseClass, isMulti)
+        })(readString(apiOperation.responseClass), apiOperation.multiValueResponse)
 
         docOperation.setResponseTypeInternal(apiResponseValue)
         try {
@@ -138,7 +141,7 @@ trait ApiSpecParserTrait extends BaseApiParser {
                 docParam.allowableValues = convertToAllowableValues(p.allowableValues)
               } catch {
                 case e: RuntimeException =>
-                  LOGGER.error("Allowable values annotation is wrong in method  " + method +
+                  LOGGER.error("Allowable values annotation problem in method  " + method +
                     "for parameter " + docParam.name)
                   e.printStackTrace()
               }
@@ -146,20 +149,17 @@ trait ApiSpecParserTrait extends BaseApiParser {
               docParam.allowMultiple = p.allowMultiple
               docParam.paramAccess = readString(p.access)
               docParam.internalDescription = readString(p.internalDescription)
-              val dataType = readString(p.dataType)
-              docParam.setValueTypeInternal(dataType)
-              docParam.dataType = try {
-                val cls = SwaggerContext.loadClass(dataType)
-                val annotatedName = ApiPropertiesReader.readName(cls)
-                // FIXME - support List[] similar to isResponseMultiValue
-                annotatedName
-              } catch {
-                case e: ClassNotFoundException =>
-                  dataType
-              }
               docParam.paramType = readString(p.paramType)
               docParam.paramType = if (docParam.paramType == null) TYPE_QUERY else docParam.paramType
 
+              val dataType = readString(p.dataType)
+              docParam.setValueTypeInternal(dataType)
+              try {
+                val cls = SwaggerContext.loadClass(dataType)
+                docParam.dataType = ApiPropertiesReader.readName(cls)
+              } catch {
+                case e: ClassNotFoundException => docParam.dataType = dataType
+              }
               docOperation.addParameter(docParam)
             }
           }

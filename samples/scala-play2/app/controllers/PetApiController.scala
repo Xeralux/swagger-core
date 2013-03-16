@@ -6,12 +6,11 @@ import api._
 import play.api._
 import play.api.mvc._
 import play.api.data._
-import play.data.validation._
 import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.Play.current
 
-import javax.ws.rs.{ Path, QueryParam }
+import javax.ws.rs.{ QueryParam, PathParam }
 
 import java.io.StringWriter
 
@@ -19,11 +18,10 @@ import play.api.data.format.Formats._
 import com.wordnik.swagger.core._
 import com.wordnik.swagger.annotations._
 
-@Api(value = "/pet", description = "Operations about pets")
+@Api(value = "/pet", listingPath = "/api-docs.{format}/pet", description = "Operations about pets")
 object PetApiController extends BaseApiController {
   var petData = new PetData
 
-  @Path("/{id}")
   @ApiOperation(value = "Find pet by ID", notes = "Returns a pet when ID < 10. " +
     "ID > 10 or nonintegers will simulate API error conditions", responseClass = "models.Pet", httpMethod = "GET")
   @ApiParamsImplicit(Array(
@@ -32,7 +30,8 @@ object PetApiController extends BaseApiController {
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid ID supplied"),
     new ApiError(code = 404, reason = "Pet not found")))
-  def getPetById(id: String) = Action { implicit request =>
+  def getPetById(
+    @ApiParam(value = "ID of the pet to fetch")@PathParam("id") id: String) = Action { implicit request =>
     petData.getPetbyId(getLong(0, 100000, 0, id)) match {
       case Some(pet) => JsonResponse(pet)
       case _ => JsonResponse(new value.ApiResponse(404, "Pet not found"), 404)
@@ -66,7 +65,8 @@ object PetApiController extends BaseApiController {
     request.body.asJson match {
       case Some(e) => {
         val pet = BaseApiController.mapper.readValue(e.toString, classOf[Pet]).asInstanceOf[Pet]
-        JsonResponse(pet)
+        petData.addPet(pet)
+        JsonResponse("SUCCESS")
       }
       case None => JsonResponse(new value.ApiResponse(404, "sorry"))
     }
@@ -84,7 +84,6 @@ object PetApiController extends BaseApiController {
     JsonResponse(results)
   }
 
-  @Path("/findByTags")
   @ApiOperation(value = "Finds Pets by tags",
     notes = "Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
     responseClass = "models.Pet", multiValueResponse = true)
@@ -95,6 +94,19 @@ object PetApiController extends BaseApiController {
       allowMultiple = true)@QueryParam("tags") tags: String) = Action { implicit request =>
     var results = petData.findPetByTags(tags)
     JsonResponse(results)
+  }
+
+  @ApiOperation(value = "Attach an Image File for a pet",
+    notes = "Is not functional, only used to test file upload params",
+    responseClass = "void")
+  @ApiErrors(Array(
+    new ApiError(code = 400, reason = "Invalid file format")))
+  @ApiParamsImplicit(Array(
+    new ApiParamImplicit(value = "Image file to attach", required = true, dataType = "file", paramType = "body"),
+    new ApiParamImplicit(name = "id", value = "ID of pet to which to attach image", required = true, dataType = "String", paramType = "path",
+      allowableValues = "range[0,10]")))
+  def attachImage (id: String) = Action { implicit request =>
+    JsonResponse("SUCCESS")
   }
 }
 

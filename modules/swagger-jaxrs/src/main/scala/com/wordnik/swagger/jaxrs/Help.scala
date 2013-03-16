@@ -17,34 +17,35 @@
 package com.wordnik.swagger.jaxrs
 
 import com.wordnik.swagger.core._
+import com.wordnik.swagger.core.util.TypeUtil
 import com.wordnik.swagger.annotations._
 
 import org.slf4j.LoggerFactory
-
-import com.sun.jersey.api.core.ResourceConfig
-
-import javax.servlet.ServletConfig
 
 import javax.ws.rs.{ Path, GET }
 import javax.ws.rs.core.{ UriInfo, HttpHeaders, Context, Response }
 import javax.ws.rs.core.Response.Status
 
+import javax.servlet.ServletConfig
+
 import scala.collection.JavaConversions._
 
+@deprecated
 trait Help {
   @GET
   @ApiOperation(value = "Returns information about API parameters",
     responseClass = "com.wordnik.swagger.core.Documentation")
-  def getHelp(@Context sc: ServletConfig,
-    @Context rc: ResourceConfig,
-    @Context headers: HttpHeaders,
+  def getHelp(
+    @Context sc: ServletConfig, 
+    @Context headers: HttpHeaders, 
     @Context uriInfo: UriInfo): Response = {
     val reader = ConfigReaderFactory.getConfigReader(sc)
 
-    val apiVersion = reader.getApiVersion()
-    val swaggerVersion = reader.getSwaggerVersion()
-    val basePath = reader.getBasePath()
-    val apiFilterClassName = reader.getApiFilterClassName()
+    val apiVersion = reader.apiVersion
+    val swaggerVersion = reader.swaggerVersion
+    val basePath = reader.basePath
+    val apiFilterClassName = reader.apiFilterClassName
+    reader.modelPackages.split(",").foreach(p => TypeUtil.addAllowablePackage(p))
 
     val filterOutTopLevelApi = true
     val currentApiEndPoint = this.getClass.getAnnotation(classOf[Api])
@@ -73,7 +74,7 @@ trait Help {
         uriInfo,
         apiListingPath,
         apiPath)
-        
+
       docs.basePath = basePath
       docs.apiVersion = apiVersion
       docs.swaggerVersion = swaggerVersion
@@ -87,7 +88,7 @@ object ConfigReaderFactory {
     var configReaderStr = {
       sc.getInitParameter("swagger.config.reader") match {
         case s: String => s
-        case _ => "com.wordnik.swagger.jaxrs.ConfigReader"
+        case _ => "com.wordnik.swagger.jaxrs.JerseyConfigReader"
       }
     }
     val constructor = SwaggerContext.loadClass(configReaderStr).getConstructor(classOf[ServletConfig])
