@@ -33,6 +33,7 @@ import play.api.Logger
 
 import scala.collection.JavaConversions._
 import scala.io.Source
+import scala.reflect.runtime._
 
 case class RouteEntry(httpMethod: String, path: String)
 
@@ -161,8 +162,14 @@ private class PlayApiSpecParser(_hostClass: Class[_], _apiVersion: String, _swag
    * Get the singleton instance that is implementing our controller 
    * Unfortunately scala reflection doesn't yet have an API for this.
    */
-  private def getSingleton = hostClass.getField("MODULE$").get(hostClass)
-
+  private def getSingleton = {
+    val hostMirror = universe.runtimeMirror(hostClass.getClassLoader)
+    val hostClassSymbol = hostMirror.classSymbol(hostClass)
+    val hostModuleSymbol = hostClassSymbol.companionSymbol.asModule
+    val hostModuleMirror = hostMirror.reflectModule(hostModuleSymbol)
+    hostModuleMirror.instance
+  }
+  
   def getFullMethodName(method: Method): String = {
     hostClass.getCanonicalName.indexOf("$") match {
       case -1 => hostClass.getCanonicalName + "$." + method.getName
