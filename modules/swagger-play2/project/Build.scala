@@ -7,6 +7,7 @@ object ApplicationBuild extends Build {
   val appVersion = "1.2.1-SNAPSHOT"
 
   val appDependencies: Seq[sbt.ModuleID] = Seq(
+    "play" %% "play-test" % "2.1.0",
     "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.0.4",
     "com.fasterxml.jackson.core" % "jackson-annotations" % "2.0.4",
     "org.slf4j" % "slf4j-api" % "1.6.3",

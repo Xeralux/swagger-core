@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBContext
 import java.io.StringWriter
 
 import play.api.mvc.RequestHeader
+import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.Play.current
 import play.api.Logger
 
@@ -205,12 +206,13 @@ object ApiHelpInventory {
   def reload() = {
     PlayApiReader.clear
     ApiAuthorizationFilterLocator.clear
-
     clear()
-    this.getRootResources("json")(null)
+
+    val request = new FakeRequest("GET", "/", new FakeHeaders, ())
+    this.getRootResources("json")(request)
     for (resource <- this.getResourceMap.keys) {
       Logger.debug("loading resource " + resource)
-      getResource(resource)(null) match {
+      getResource(resource)(request) match {
         case Some(docs) => Logger.debug("loaded resource " + resource)
         case None => Logger.debug("load failed for resource " + resource)
       }
